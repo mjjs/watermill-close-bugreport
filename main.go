@@ -58,21 +58,36 @@ func main() {
 		}
 	}()
 
-	// Guarantee router is up
+	// Guarantee that the router is up
 	time.Sleep(3 * time.Second)
-	fmt.Printf("router.IsRunning: %t\n", router.IsRunning())
+	fmt.Printf("router.IsRunning after run: %t\n", router.IsRunning())
+
+	{
+		running := false
+		select {
+		case <-router.Running():
+			running = true
+		default:
+			running = false
+		}
+
+		fmt.Printf("router.Running after run: %t\n", running)
+	}
 
 	// Close router
 	router.Close()
 
 	fmt.Printf("router.IsRunning after close: %t\n", router.IsRunning())
 
+	running := false
 	select {
 	case <-router.Running():
-		fmt.Println("Running")
+		running = true
 	default:
-		fmt.Println("Not running")
+		running = false
 	}
+
+	fmt.Printf("router.Running after close: %t\n", running)
 
 	if err := router.Run(ctx); err != nil {
 		panic(err)
